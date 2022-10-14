@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>消防监管</title>
+		<!-- WEB -->
+		<script type="text/javascript" src="./plugin/web/jquery/jquery.min.js"></script>
+		<!-- GIS -->
+		<link href="./plugin/gis/openlayers/6.5.0/ol.css" rel="stylesheet">
+		<script type="text/javascript" src="./plugin/gis/openlayers/6.5.0/ol.js"></script>
+		<script type="text/javascript" src="./plugin/gis/turf/5.1.6/turf.min.js"></script>
+		<!-- FNC -->
+		<script type="text/javascript" src="./plugin/gis/acol/acol.min.js"></script>
+		<script type="text/javascript" src="./plugin/js/DCX/XFJG/message.js"></script>
+		<!-- DATA -->
+		<script type="text/javascript" src="./data/geoJson/DCX/data.js"></script>
+
+		<style type="text/css">
+
+		</style>
+
+	</head>
+	<body style=" margin: 0;overflow: hidden;background-color: transparent;width: 100%;height:100%;position: absolute;top: 0;">
+		<div id="map" style="margin:0 auto;width: 100%;height: 100%; background-color: transparent;border:rgba(255,255,255,0);"></div>
+		<script type="text/javascript">
+		
+			// 数据解密
+			const geoJsonData_town = new acol_dea().decodeGeoJson({data:geoJsonData_town1});
+			const geoJsonData_village = new acol_dea().decodeGeoJson({data:geoJsonData_village1});
+
+			// 地图map对象
+			let acMap,vector_area,vector_feature;
+			
+			init();
+			
+			/**
+			 * 初始化
+			 */
+			function init(){
+				// acMap对象
+				acMap = new acol_map();
+				acMap.initMap({id:"map",center:[118.588371357888,28.8337755567214],zoom:13,minZoom:12,maxZoom:18,constrainResolution:true});
+				
+				// 加载天地图图层
+				addTDTLayer("img");
+				// 加载行政区划矢量图层
+				addVectorLayer();
+				// 添加点要素
+				addFeatures();
+
+				// initInfo消息交互
+				let message = {"key":"initInfo","value":{"initType":true}};
+				sendMessage('gisMapMessage',message);
+			}
+			/**
+			 * 加载天地图图层
+			 */
+			function addTDTLayer(type){
+				acMap.removeLayerByNames(["tdt_layer","tdt_label"]);
+				
+				let tdt_layer = new acol_layer(acMap.map).tdtLayer({"name":"tdt_layer","type":type,"sourceType":"XYZ","isLabel":false,"zIndex":0});
+				let tdt_label = new acol_layer(acMap.map).tdtLayer({"name":"tdt_label","type":type,"sourceType":"XYZ","isLabel":true,"zIndex":0});
+				
+				acMap.addLayers([tdt_layer,tdt_label]);
+			}
+			/**
+			 * 加载矢量数据图层
+			 */
+			function addVectorLayer(){
+				vector_area = new acol_layer(acMap.map).vectorLayer({
+					name: "area",
+					type: "polygon",
+					dataOption: {
+						data: geoJsonData_village,
+					},
+					style:{
+						fill:{"color":"rgba(0,255,255,0.1)"},
+						stroke:{"color":"rgba(0,255,255,1)","width":1},
+						text:{
+							"field":"name",
+							"fill":{"color":"rgba(255,255,255,1)"},
+							"stroke":{},
+							"font":"20px Calibri",
+						}
+					},
+					zIndex:1
+				}); 
+				vector_feature = new acol_layer(acMap.map).vectorLayer({
+					name: "feature",
+					type: "point",
+					/* dataOption: {
+						data: DCX_XFJG,
+					}, */
+					style:{
+						icon:{
+							src: "./data/image/DCX/消防监控.png",
+							anchor: [0.5,0.8],
+							scale:0.6
+						}
+					},
+					zIndex: 3
+				});
+				// 添加图层、要素
+				acMap.addLayers([vector_area,vector_feature]);
+			}
+			/**
+			 * 添加要素
+			 */
+			function addFeatures(){
+				clear();
+				
+				let pointFeatures = new ol.format.GeoJSON().readFeatures(DCX_XFJG, {
+					featureProjection: 'EPSG:4326',
+				});
+				vector_feature.getSource().addFeatures(pointFeatures);
+				// 根据extent定位
+				new acol_layer(acMap.map).panToByExtent({
+					extent: vector_feature.getSource().getExtent(),
+					zoomNum: 0.002,
+					duration: 1000
+				});
+			}
+			/**
+			 * 清除
+			 */
+			function clear(){
+				vector_feature.getSource().clear();
+			}
+		
+		</script>
+	</body>
+</html>

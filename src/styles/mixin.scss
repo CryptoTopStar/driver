@@ -1,0 +1,26 @@
+@mixin ac-flex {
+  display: flex;
+  align-items: center;
+}
+
+@mixin ac-flex-column {
+  flex-direction: column;
+}
+
+@mixin flex-row-center {
+  justify-content: center;
+}
+
+@mixin flex-row-between {
+  justify-content: space-between;
+}
+
+@mixin flex-column-start {
+  align-items: flex-start;
+}
+
+@mixin text-overflow {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

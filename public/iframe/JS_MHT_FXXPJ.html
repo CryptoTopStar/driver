@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>猕猴桃-风险性评价</title>
+	<!-- GIS -->
+	<link href="./plugin/gis/openlayers/6.5.0/ol.css" rel="stylesheet">
+	<script type="text/javascript" src="./plugin/gis/openlayers/6.5.0/ol.js"></script>
+	<script type="text/javascript" src="./plugin/gis/turf/5.1.6/turf.min.js"></script>
+	<!-- FNC -->
+	<script type="text/javascript" src="./plugin/gis/fnc/ac-ol.min.js"></script>
+	<!-- DATA -->
+	<script type="text/javascript" src="./data/MHT/json/geoJson.js"></script>
+	<!-- STYLE -->
+	<style type="text/css"></style>
+</head>
+<body style=" margin: 0;overflow: hidden;background-color: transparent;width: 100%;height:100%;position: absolute;top: 0;">
+<div class="pop" id="infoWindow"></div>
+<div id="map" style="margin:0 auto;width: 100%;height: 100%; background-color: transparent;border:rgba(255,255,255,0);"></div>
+<script type="text/javascript">
+	// 地图分辨率数组
+	let resolutions = [
+		0.17578125,
+		0.087890625,
+		0.0439453125,
+		0.02197265625,
+		0.010986328125,
+		0.0054931640625,
+		0.00274658203125,
+		0.00175985,
+		0.00175985,
+		0.001373291015625,
+		0.0010299,
+		0.0006866455078125,
+		0.00034332275390625,
+		0.000171661376953125,
+		0.0000858306884765625,
+		//0.00004291534423828125,
+		//0.000021457672119140625,
+		//0.000010728836059570312
+	];
+	// 全局变量(图层)
+	let backgroundLayer = null;
+	// 行政区划矢量图层
+	let areaLayer = null;
+	// 实例化Map对象用于加载地图
+	let map = new ol.Map({
+		// 移除控件
+		controls: ol.control.defaults({attribution: false, zoom: false, layerSwitcher: true}),
+		target:'map',
+		view: new ol.View({
+			center:[118.596696547947,28.5662819608701],
+			projection:'EPSG:4326',
+			zoom:10,		
+			minZoom: 9,	
+			maxZoom: 16,	
+			//resolutions: resolutions,
+			//constrainResolution:true
+		}),
+		interactions:new ol.interaction.defaults({
+		     doubleClickZoom:false 
+		})
+	});
+	// 添加要素选择器及常用事件
+	let mapSelect = new ol.interaction.Select();
+	map.addInteraction(mapSelect);
+	mapSelect.on('select',function(e){
+		// 取消选中要素高亮
+		this.getFeatures().clear();
+	});
+	// 注册
+	ext_event.mapEventOn(function(e){},"LEFT_CLICK");
+	// 注册
+	//ext_event.mapEventOn(function(e){},"MOUSE_MOVE");
+	
+	init();
+	
+	/**
+	 * 初始化
+	 */
+	function init(){
+		// 加载背景图层
+		addBackgroundLayer();
+		// 添加行政区划面图层
+		addAreaLayer();
+	}
+	/**
+	 * 背景面图层
+	 */
+	function addBackgroundLayer(){
+		// 样式信息配置
+		let style = {
+			"fill":{"color":"rgba(30,144,255,0.5)"},
+			"stroke":{"color":"rgba(30,144,255,0.5)","width":1}
+		};
+		// 初始化图层并添加
+		backgroundLayer = ext_layerControl.vectorLayer({"name":"背景面图层","type":"polygon","style":style,"zIndex":1});
+		ext_layerControl.addLayer(backgroundLayer);
+	}
+	/**
+	 * @param {Object} GJFeature
+	 * @param {Object} offsetX
+	 * @param {Object} offsetY
+	 * 添加背景矢量要素，加偏移
+	 */
+	function addBackgroundFeatures(GJFeature,offsetX,offsetY){
+		// 清空backgroundLayer图层
+		clearLayers({"backgroundLayer":backgroundLayer});
+		
+		// 创建背景要素
+		let data = createBackgroundFeature(GJFeature,offsetX,offsetY);
+		let data_temp = ext_util.differenceByTurf(data,ext_util.objDeepCopy(GJFeature));
+		// 添加geoJson格式数据
+		let dataFeatures = new ol.format.GeoJSON().readFeatures(data_temp, {
+			featureProjection: 'EPSG:4326',
+		});
+		backgroundLayer.getSource().addFeatures(dataFeatures);
+	}
+	/**
+	 * @param {Object} GJFeature
+	 * @param {Object} offsetX
+	 * @param {Object} offsetY
+	 * 创建背景矢量要素，加偏移
+	 */
+	function createBackgroundFeature(GJFeature,offsetX,offsetY){
+		let geoJsonFeature = ext_util.objDeepCopy(GJFeature);
+		// 加偏移，临时写法，具体实现方式待定
+		for(let j=0;j<geoJsonFeature.features.length;++j){
+			let tempFeature = geoJsonFeature.features[j];
+			let tempCoordinates = tempFeature.geometry.coordinates;
+			for(let k=0;k<tempCoordinates.length;++k){
+				for(let m=0;m<tempCoordinates[k].length;++m){
+					tempCoordinates[k][m][0] += offsetX;
+					tempCoordinates[k][m][1] += offsetY;
+				}
+			}
+		}
+		return geoJsonFeature;
+	}
+	/**
+	 * 添加行政区划图层
+	 */
+	function addAreaLayer(){
+		// 初始化图层并添加
+		areaLayer = ext_layerControl.vectorLayer({"name":"行政区划面","type":"polygon","style":null,"zIndex":1});
+		areaLayer.setStyle(function (feature) {
+			let colorRGB = ext_util.hexToRGB(feature.get("color"));
+			let style_temp = new ol.style.Style({
+				fill: new ol.style.Fill({"color":"rgba("+colorRGB.R+","+colorRGB.G+","+colorRGB.B+",0.8)"}),
+				stroke: new ol.style.Stroke({"color":"rgba("+colorRGB.R+","+colorRGB.G+","+colorRGB.B+",1.0)","width":1}),
+				text: new ol.style.Text({
+					text: feature.get("name")+"",
+					font: '14px Calibri',
+					fill: new ol.style.Fill({"color":"rgba(255,255,255,1)"}),
+					stroke: new ol.style.Stroke({"color":"rgba(0,0,0,1)","width":2}),
+				})
+			});
+			return style_temp;
+		});
+		ext_layerControl.addLayer(areaLayer);
+		
+		addFeatures();
+	}
+	/**
+	 * 添加矢量要素
+	 */
+	function addFeatures(){
+		// 清空图层
+		clearLayers({"backgroundLayer":backgroundLayer,"areaLayer":areaLayer});
+		
+		// geoJson结果对象
+		let geoJsonData_background = ext_util.objDeepCopy(geoJsonData_county);
+		let geoJsonData_area = ext_util.objDeepCopy(geoJsonData_town);
+		
+		// 添加geoJson格式数据
+		let areaFeatures = new ol.format.GeoJSON().readFeatures(geoJsonData_area, {
+			featureProjection: 'EPSG:4326',
+		});
+		areaLayer.getSource().addFeatures(areaFeatures);
+		// 添加背景要素
+		addBackgroundFeatures(geoJsonData_background,0,-0.01);
+		
+		setTimeout(() => {
+			// 定位
+			map.getView().fit(areaLayer.getSource().getExtent(),{duration: 1000});
+		}, 100);
+	}
+	/**
+	 * 清空图层
+	 */
+	function clearLayers({backgroundLayer,areaLayer}){
+		// 清空backgroundLayer图层
+		if(backgroundLayer) backgroundLayer.getSource().clear();
+		// 清空area图层
+		if(areaLayer) areaLayer.getSource().clear();
+	}	
+</script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+//使用scss的math函数，https://sass-lang.com/documentation/breaking-changes/slash-div
+@use "sass:math";
+
+//默认设计稿的宽度
+$designWidth: 1920;
+//默认设计稿的高度
+$designHeight: 1080;
+
+// px转为vw的函数
+@function vw($px) {
+  @return math.div($px, $designWidth) * 100vw;
+}
+
+// px转为vh的函数
+@function vh($px) {
+  @return math.div($px, $designHeight) * 100vh;
+}
+

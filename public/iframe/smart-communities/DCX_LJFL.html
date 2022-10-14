@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>垃圾分类</title>
+		<!-- WEB -->
+		<script type="text/javascript" src="./plugin/web/jquery/jquery.min.js"></script>
+		<!-- GIS -->
+		<link href="./plugin/gis/openlayers/6.5.0/ol.css" rel="stylesheet">
+		<script type="text/javascript" src="./plugin/gis/openlayers/6.5.0/ol.js"></script>
+		<script type="text/javascript" src="./plugin/gis/turf/5.1.6/turf.min.js"></script>
+		<!-- FNC -->
+		<script type="text/javascript" src="./plugin/gis/acol/acol.min.js"></script>
+		<script type="text/javascript" src="./plugin/js/DCX/LJFL/message.js"></script>
+		<!-- DATA -->
+		<script type="text/javascript" src="./data/geoJson/DCX/data.js"></script>
+
+		<style type="text/css">
+			
+		</style>
+
+	</head>
+	<body style=" margin: 0;overflow: hidden;background-color: transparent;width: 100%;height:100%;position: absolute;top: 0;">
+		<div class="infoPop" id="infoWindow"></div>
+		<div id="map" style="margin:0 auto;width: 100%;height: 100%; background-color: transparent;border:rgba(255,255,255,0);"></div>
+
+		<script type="text/javascript">
+		
+			// 数据解密
+			const geoJsonData_town = new acol_dea().decodeGeoJson({data:geoJsonData_town1});
+			const geoJsonData_village = new acol_dea().decodeGeoJson({data:geoJsonData_village1});
+			// DCX_XCLY
+
+			// 地图map对象
+			let acMap,vector_area,vector_hl;
+			let colorOption;
+			
+			init();
+			
+			/**
+			 * 初始化
+			 */
+			function init(){
+				// acMap对象
+				acMap = new acol_map();
+				acMap.initMap({id:"map",center:[118.588371357888,28.8337755567214],zoom:13,minZoom:12,maxZoom:18,constrainResolution:true});
+				
+				// 加载天地图图层
+				addTDTLayer("img");
+				// 加载行政区划矢量图层
+				addVectorLayer();
+				addHLLayer();
+				
+				// 添加要素选择器及常用事件
+				let mapSelect = new ol.interaction.Select();
+				acMap.map.addInteraction(mapSelect);
+				mapSelect.on('select',function(e){
+					// 取消选中要素高亮
+					this.getFeatures().clear();
+					if(!e.selected.length) return;
+					
+					// 获取参数
+					let props = e.selected[0].getProperties();
+					// 添加高亮要素
+					addHLFeature(e.selected[0].clone());
+					// 父页面消息交互
+					let message = {"key":"areaInfo","value":{"areaName":props["name"]}};
+					sendMessage('gisMapMessage',message);
+				});
+				// 注册鼠标单击事件
+				acMap.mapEventOn(function(e){
+					// 屏幕坐标点获取要素
+					let features = acMap.map.getFeaturesAtPixel(e.pixel);
+					// 未获取到要素时，执行高亮清空操作
+					if(!features.length){
+						vector_hl.getSource().clear();
+						// 父页面消息交互
+						let message = {"key":"areaInfo","value":{"areaName":""}};
+						sendMessage('gisMapMessage',message);
+					}
+				},"LEFT_CLICK");
+				
+				// initInfo消息交互
+				let message = {"key":"initInfo","value":{"initType":true}};
+				sendMessage('gisMapMessage',message);
+			}
+			
+			function changeAreaByOption(option){
+				clear();
+				// 遍历赋值
+				for(let key in option){
+					option[key] = new acol_util().hexToRGB(getColorByNum(option[key]));
+				}
+				// 全局变量
+				colorOption = option;
+				//console.log(option);
+				// area要素
+				let areaFeatures = new ol.format.GeoJSON().readFeatures(geoJsonData_village, {
+					featureProjection: 'EPSG:4326',
+				});
+				vector_area.getSource().addFeatures(areaFeatures);
+			}
+			function getColorByNum(num){
+				if(num === null) return "#9389FF";
+				switch (true) {
+				    case (num < 0.8):
+				        return "#EF9E4E";
+				    case (num < 0.85):
+				        return "#26B4FF";
+				    default:
+				        return "#38D672";
+				}
+			}
+			
+			/**
+			 * 添加高亮要素
+			 */
+			function addHLFeature(feature){
+				// 添加要素前先清空图层
+				vector_hl.getSource().clear();
+				vector_hl.getSource().addFeatures([feature]);
+			}
+			/**
+			 * 添加高亮面数据图层
+			 */
+			function addHLLayer(){
+				// 面图层初始化
+				vector_hl = new acol_layer(acMap.map).vectorLayer({
+					name: "高亮面图层",
+					type: "polygon",
+					style:{
+						fill:{},
+						stroke:{"color":"rgba(0,255,255,1)","width":3},
+					},
+					zIndex:2
+				}); 
+				// 添加图层、要素
+				acMap.addLayer(vector_hl);
+			}
+			
+			/**
+			 * 加载天地图图层
+			 */
+			function addTDTLayer(type){
+				acMap.removeLayerByNames(["tdt_layer","tdt_label"]);
+				
+				let tdt_layer = new acol_layer(acMap.map).tdtLayer({"name":"tdt_layer","type":type,"sourceType":"XYZ","isLabel":false,"zIndex":0});
+				let tdt_label = new acol_layer(acMap.map).tdtLayer({"name":"tdt_label","type":type,"sourceType":"XYZ","isLabel":true,"zIndex":0});
+				
+				acMap.addLayers([tdt_layer,tdt_label]);
+			}
+			/**
+			 * 加载矢量数据图层
+			 */
+			function addVectorLayer(){
+				vector_area = new acol_layer(acMap.map).vectorLayer({
+					name: "area",
+					type: "polygon",
+					zIndex:1
+				}); 
+				vector_area.setStyle(function(feature){
+					let color = colorOption[feature.get("name")];
+					return new ol.style.Style({
+						fill: new ol.style.Fill({
+							"color": 'rgba('+color.R+','+color.G+','+color.B+',0.5)',
+						}),
+						stroke: new ol.style.Stroke({
+							"color": 'rgba('+color.R+','+color.G+','+color.B+',1)',
+							"width":2
+						}),
+						text: new ol.style.Text({
+							text: feature.get("name"),
+							font: "20px Calibri",
+							fill: new ol.style.Fill({"color":"rgba(255,255,255,1)"}),
+							stroke: null,
+						})
+					})
+				});
+				// 添加图层、要素
+				acMap.addLayers([vector_area]);
+			}
+			/**
+			 * 清除
+			 */
+			function clear(){
+				vector_area.getSource().clear();
+			}
+		
+		</script>
+	</body>
+</html>

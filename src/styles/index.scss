@@ -1,0 +1,42 @@
+@import './utils.scss';
+@import './mixin.scss';
+
+@function px2rem($px) {
+  @return ($px/16) * 1rem;
+}
+@font-face {
+  font-family: 'YouSheBiaoTiHei';
+  src: url('~@/assets/fonts/YouSheBiaoTiHei.ttf');
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'HuXiaoBoNanShenTi';
+  src: url('~@/assets/fonts/胡晓波男神体2.0.ttf') format('opentype');
+}
+
+@font-face {
+  font-family: 'PangMenZhengDao';
+  src: url("../../public/iframe/smart-communities/data/font/庞门正道标题体3.0.ttf");
+}
+
+@keyframes sc-icon-hover-anim {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  //10% {
+  //  transform: translate3d(0, 5%, 0);
+  //}
+  50% {
+    transform: translate3d(0, 15%, 0);
+  }
+}
+
+@keyframes jscm-icon-scale-down-anim {
+  from {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+}

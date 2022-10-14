@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>猕猴桃-产业资源</title>
+	<!-- WEB -->
+	<script type="text/javascript" src="./plugin/web/jquery/jquery.min.js"></script>
+	<link href="./plugin/web/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<script type="text/javascript" src="./plugin/web/bootstrap/js/bootstrap.min.js"></script>
+	<style type="text/css">
+		#toolbar1 {
+			position: absolute;
+			top: 20px;
+			left: 20px;
+			width: 260px;
+			text-align: center;
+			z-index: 9999;
+			border-radius: 4px;
+		}
+	</style>
+    <script type="text/javascript">
+		if (window.addEventListener) {
+		    //为window注册message事件并绑定监听函数
+		    window.addEventListener('message', receiveMsg, false);
+		}else {
+		    window.attachEvent('message', receiveMsg);
+		}
+		//监听函数，接收一个参数--Event事件对象
+		function receiveMsg(e) {
+			let obj = e.data;
+		    // 地图交互消息监听
+		    if(obj.type == "gisMapMessage"){
+		    	if(obj.data.key == "initInfo" && obj.data.value){
+					// initType为true时，map初始化成功
+		    		console.log("initInfo交互---地图加载完成",obj.data.value.initType);
+					// 全部点数据
+					let allData = {
+						'企业': [{"company":"浙江江山彬峰农业发展有限公司","town":"塘源口乡","cultivated":305,"principal":"沈少峰","phone":18857026111,"lng":118.713,"lat":28.602,"type":"企业"},{"company":"浙江裕顺农业科技开发公司","town":"虎山街道","cultivated":600,"principal":"陈琦云","phone":13706700458,"lng":118.623,"lat":28.738,"type":"企业"},{"company":"浙江亚米农业发展有限公司","town":"长台镇","cultivated":50,"principal":"林芬","phone":13587000888,"lng":118.6772753,"lat":28.60601528,"type":"企业"},{"company":"江山市普华农业发展有限公司","town":"双塔街道","cultivated":280,"principal":"郑津","phone":13867003524,"lng":118.6289519,"lat":28.7448496,"type":"企业"}],
+						'合作社': [{"company":"江山市神农猕猴桃专业合作社","town":"塘源口乡","cultivated":1200,"principal":"林庆柱","phone":13587000888,"lng":118.7089762,"lat":28.60227967,"type":"合作社"}],
+						'家庭农场': [{"company":"江山市郑峰林家庭农场","town":"上余镇","cultivated":120,"principal":"郑峰林","phone":15869066160,"lng":118.7124798,"lat":28.70078096,"type":"家庭农场"},{"company":"江山市天绿家庭农场","town":"碗窑乡","cultivated":60,"principal":"张天彪","phone":15057061886,"lng":118.7117372,"lat":28.63439072,"type":"家庭农场"},{"company":"江山市飞雪家庭农场","town":"长台镇","cultivated":50,"principal":"陈雪文","phone":15057029281,"lng":118.688,"lat":28.607,"type":"家庭农场"},{"company":"江山市起航家庭农场","town":"双塔街道","cultivated":12,"principal":"陈建国","phone":13957020864,"lng":118.689,"lat":28.749,"type":"家庭农场"},{"company":"江山市元玉家庭农场","town":"张村乡","cultivated":50,"principal":"郑洪兴","phone":15700021623,"lng":118.684,"lat":28.525,"type":"家庭农场"},{"company":"江山市永景春家庭农场","town":"张村乡","cultivated":100,"principal":"夏浠景","phone":13567088887,"lng":118.689,"lat":28.454,"type":"家庭农场"},{"company":"江山市万晟家庭农场","town":"虎山街道","cultivated":110,"principal":"王广谋","phone":13567084848,"lng":118.603,"lat":28.713,"type":"家庭农场"},{"company":"江山市润森家庭农场","town":"塘源口乡","cultivated":128,"principal":"姜正善","phone":13396707199,"lng":118.7585838,"lat":28.57664851,"type":"家庭农场"},{"company":"江山市光景家庭农场","town":"贺村镇","cultivated":200,"principal":"郑碧清","phone":15957012107,"lng":118.4975936,"lat":28.63402638,"type":"家庭农场"},{"company":"江山市石塘家庭农场","town":"塘源口乡","cultivated":100,"principal":"廖芝强","phone":15905704217,"lng":118.7784898,"lat":28.61831717,"type":"家庭农场"},{"company":"江山市优悠家庭农场","town":"廿八都镇","cultivated":60,"principal":"徐燕","phone":15857069090,"lng":118.4839504,"lat":28.30855863,"type":"家庭农场"},{"company":"江山市绿优家庭农场","town":"碗窑乡","cultivated":89,"principal":"吴根良","phone":15116124788,"lng":118.704,"lat":28.658,"type":"家庭农场"},{"company":"江山市正红家庭农场","town":"塘源口乡","cultivated":40,"principal":"朱放青","phone":17805708851,"lng":118.774,"lat":28.614,"type":"家庭农场"},{"company":"江山市迷果家庭农场","town":"长台镇","cultivated":60,"principal":"毛顺富","phone":13867000570,"lng":118.64241,"lat":28.62868053,"type":"家庭农场"},{"company":"江山市慕青家庭农场","town":"塘源口乡","cultivated":60,"principal":"周建红","phone":13567011627,"lng":118.777889,"lat":28.61903884,"type":"家庭农场"},{"company":"江山市晨曦家庭农场","town":"塘源口乡","cultivated":50,"principal":"周金阳","phone":13511416655,"lng":118.73,"lat":28.582,"type":"家庭农场"},{"company":"江山市阿土哥家庭农场","town":"碗窑乡","cultivated":80,"principal":"郑水土","phone":15057022426,"lng":118.6981482,"lat":28.63901098,"type":"家庭农场"},{"company":"江山市今丰哥家庭农场","town":"贺村镇","cultivated":45,"principal":"周孝智","phone":13567088861,"lng":118.5,"lat":28.663,"type":"家庭农场"},{"company":"江山市逢旺家庭农场","town":"长台镇","cultivated":35,"principal":"郑文旺","phone":13454012761,"lng":118.6973953,"lat":28.59449302,"type":"家庭农场"},{"company":"江山市刘德坤家庭农场","town":"塘源口乡","cultivated":50,"principal":"刘德坤","phone":15905702826,"lng":118.777,"lat":28.619,"type":"家庭农场"},{"company":"江山市德龙家庭农场","town":"峡口镇","cultivated":40,"principal":"曾德龙","phone":13967008898,"lng":118.602609,"lat":28.42394472,"type":"家庭农场"},{"company":"江山市遇见你家庭农场","town":"清湖街道","cultivated":40,"principal":"毛珍仙","phone":15325400010,"lng":118.599,"lat":28.626,"type":"家庭农场"},{"company":"江山市白马泉家庭农场","town":"新塘边镇","cultivated":180,"principal":"毛一凡","phone":18367078887,"lng":118.4552497,"lat":28.58249935,"type":"家庭农场"},{"company":"江山市柏发家庭农场","town":"清湖街道","cultivated":70,"principal":"吴柏发","phone":13587128255,"lng":118.587,"lat":28.62,"type":"家庭农场"},{"company":"江山市凤居谷家庭农场","town":"凤林镇","cultivated":230,"principal":"徐洪水","phone":15857008882,"lng":118.4492077,"lat":28.54769514,"type":"家庭农场"},{"company":"江山市颂峰家庭农场","town":"峡口镇","cultivated":350,"principal":"徐汉瑾","phone":13905701986,"lng":118.4751798,"lat":28.40212803,"type":"家庭农场"}],
+						'物联网设备': [{"name":"彬峰猕猴桃基地1号设备","lng":118.707929,"lat":28.59661,"type":"物联网设备","id":111},{"name":"彬峰猕猴桃基地2号设备","lng":118.710785,"lat":28.595073,"type":"物联网设备","id":113}]
+					};
+					// 初始化完成后，按类型添加企业点数据
+					// !!! 初始化传参，必传data，后期图例修改操作data可传null
+					addMarkerByOption({
+						data: allData,
+						names: ["家庭农场","合作社","企业","物联网设备"]
+					});
+		    	}else if(obj.data.key == "markerInfo" && obj.data.value){
+					console.log("markerInfo交互---物联网设备",obj.data.value.markerInfo);
+				}
+		    }
+		}
+		// 发送消息
+		function sendMessage(type,data){
+			// 向子页面传递消息
+			let iframe = document.getElementById("gisIframe");
+			iframe.contentWindow.postMessage({type: type, data: data},'*');
+		}
+	</script>
+</head>
+<body style="margin:0;overflow:hidden;width:100%;height:100%;position:absolute;top:0;background-color:transparent;">
+<div id="toolbar1" class="panel panel-primary">
+	<div class='panel-heading'>
+		<h5 class='panel-title text-center'>图例复选</h5>
+	</div>
+	<div class='panel-body content'>
+		<input type="button" class="btn btn-default" onclick=addMarkerByOption({data:null,names:["家庭农场","合作社","企业","物联网设备"]}) value="全选"></input>
+		<input type="button" class="btn btn-default" onclick=addMarkerByOption({data:null,names:[]}) value="全空"></input>
+	</div>
+</div>
+<iframe id="gisIframe" src="./JS_MHT_CYZY1.html" style="width:100%;height:100%;background-color:transparent;border:rgba(255,255,255,0);background: url(./data/image/back.png);"></iframe>
+	<script>
+		/**
+		 * 根据配置信息添加点数据点数据
+		 * @param {Object} option
+		 */
+		function addMarkerByOption(option){
+			// 消息交互
+			let message = {"key":"addMarkerByOption","value":{"option":option}};
+			sendMessage('gisLayerMessage',message);
+		}
+	</script>
+</html>
